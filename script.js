@@ -10,7 +10,7 @@ let player1Grid = [];
 let player2Grid = [];
 let currentTurn = "Player1";
 
-let shipLengths = [4, 3, 3, 2];
+let shipLengths = [5, 4, 3, 3, 2];  // Added new ship of 5 spaces
 let isHorizontal = true;
 
 document.addEventListener('keydown', event => {
@@ -35,6 +35,21 @@ function createGrid(gridElement, gridArray) {
     }
 }
 
+function canPlaceShip(grid, row, col, length, orientation) {
+    if (orientation === "horizontal") {
+        if (col + length > gridSize) return false;
+        for (let i = 0; i < length; i++) {
+            if (grid[row][col + i] !== 0) return false;
+        }
+    } else {
+        if (row + length > gridSize) return false;
+        for (let i = 0; i < length; i++) {
+            if (grid[row + i][col] !== 0) return false;
+        }
+    }
+    return true;
+}
+
 function handleShipPlacement(event, gridArray, player) {
     const row = parseInt(event.target.dataset.row);
     const col = parseInt(event.target.dataset.col);
@@ -46,30 +61,12 @@ function handleShipPlacement(event, gridArray, player) {
 
     let shipLength = shipLengths[0];
 
-    if (isHorizontal) {
-        if (canPlaceShip(gridArray, row, col, shipLength, "horizontal")) {
-            for (let i = 0; i < shipLength; i++) {
-                gridArray[row][col + i] = 1;
-                const cell = player === "Player1" ? player1GridElement : player2GridElement;
-                cell.children[row * gridSize + (col + i)].classList.add("ship");
-            }
-            shipLengths.shift();
-            instruction.textContent = `Player ${player === "Player1" ? "1" : "2"}, place your next ship.`;
-        } else {
-            alert("Invalid placement! Try again.");
-        }
+    if (canPlaceShip(gridArray, row, col, shipLength, isHorizontal ? "horizontal" : "vertical")) {
+        placeShip(gridArray, row, col, shipLength, player);
+        shipLengths.shift();
+        instruction.textContent = `Player ${player === "Player1" ? "1" : "2"}, place your next ship. Press 'R' to rotate.`;
     } else {
-        if (canPlaceShip(gridArray, row, col, shipLength, "vertical")) {
-            for (let i = 0; i < shipLength; i++) {
-                gridArray[row + i][col] = 1;
-                const cell = player === "Player1" ? player1GridElement : player2GridElement;
-                cell.children[(row + i) * gridSize + col].classList.add("ship");
-            }
-            shipLengths.shift();
-            instruction.textContent = `Player ${player === "Player1" ? "1" : "2"}, place your next ship.`;
-        } else {
-            alert("Invalid placement! Try again.");
-        }
+        alert("Invalid placement! Try again.");
     }
 
     if (shipLengths.length === 0) {
@@ -77,8 +74,8 @@ function handleShipPlacement(event, gridArray, player) {
         if (player === "Player1") {
             currentTurn = "Player2";
             turnIndicator.textContent = `${currentTurn}'s Turn`;
-            instruction.textContent = "Player 2, place your ships on the grid.";
-            shipLengths = [4, 3, 3, 2];
+            instruction.textContent = "Player 2, place your ships on the grid. Press 'R' to rotate.";
+            shipLengths = [5, 4, 3, 3, 2];  // Reset ship lengths for Player 2
             player1GridElement.removeEventListener("click", player1ShipPlacementHandler);
             player2GridElement.classList.remove("disabled");
             player2GridElement.addEventListener("click", player2ShipPlacementHandler);
@@ -88,107 +85,20 @@ function handleShipPlacement(event, gridArray, player) {
     }
 }
 
-function canPlaceShip(gridArray, row, col, shipLength, direction) {
-    if (direction === "horizontal") {
-        if (col + shipLength > gridSize) return false;
-        for (let i = 0; i < shipLength; i++) {
-            if (gridArray[row][col + i] !== 0) return false;
+function placeShip(gridArray, row, col, length, player) {
+    const gridElement = player === "Player1" ? player1GridElement : player2GridElement;
+    
+    if (isHorizontal) {
+        for (let i = 0; i < length; i++) {
+            gridArray[row][col + i] = 1;
+            gridElement.children[row * gridSize + (col + i)].classList.add("ship");
         }
-    } else if (direction === "vertical") {
-        if (row + shipLength > gridSize) return false;
-        for (let i = 0; i < shipLength; i++) {
-            if (gridArray[row + i][col] !== 0) return false;
-        }
-    }
-    return true;
-}
-
-function startGame() {
-    hideShips(player1GridElement);
-    hideShips(player2GridElement);
-
-    player2GridElement.classList.remove("disabled");
-    player1GridElement.classList.add("disabled");
-    currentTurn = "Player1";
-    updateTurnDisplay();
-
-    player1GridElement.removeEventListener("click", player1ShipPlacementHandler);
-    player2GridElement.removeEventListener("click", player2ShipPlacementHandler);
-    player2GridElement.addEventListener("click", handleAttack);
-    player1GridElement.addEventListener("click", handleAttack);
-}
-
-function hideShips(gridElement) {
-    const cells = gridElement.getElementsByClassName("cell");
-    for (let cell of cells) {
-        cell.classList.remove("ship");
-    }
-}
-
-function handleAttack(event) {
-    const targetGrid = currentTurn === "Player1" ? player2Grid : player1Grid;
-    const targetGridElement = currentTurn === "Player1" ? player2GridElement : player1GridElement;
-
-    const row = parseInt(event.target.dataset.row);
-    const col = parseInt(event.target.dataset.col);
-
-    if (targetGrid[row][col] === 1) {
-        event.target.classList.add("hit");
-        targetGrid[row][col] = 2;
-        shotResult.textContent = "Hit!";
-        if (checkWinCondition(targetGrid)) {
-            alert(`${currentTurn} wins!`);
-            resetGame();
-            return;
-        }
-    } else if (targetGrid[row][col] === 0) {
-        event.target.classList.add("miss");
-        targetGrid[row][col] = 3;
-        shotResult.textContent = "Miss!";
-        switchTurn();
     } else {
-        shotResult.textContent = "You've already fired at this location!";
-        return;
-    }
-
-    updateTurnDisplay();
-}
-
-function switchTurn() {
-    currentTurn = currentTurn === "Player1" ? "Player2" : "Player1";
-    player1GridElement.classList.toggle("disabled");
-    player2GridElement.classList.toggle("disabled");
-}
-
-function updateTurnDisplay() {
-    turnIndicator.textContent = `${currentTurn}'s Turn`;
-    instruction.textContent = `It's ${currentTurn}'s turn to attack.`;
-}
-
-function checkWinCondition(grid) {
-    for (let row = 0; row < gridSize; row++) {
-        for (let col = 0; col < gridSize; col++) {
-            if (grid[row][col] === 1) {
-                return false; // There's still an unhit ship
-            }
+        for (let i = 0; i < length; i++) {
+            gridArray[row + i][col] = 1;
+            gridElement.children[(row + i) * gridSize + col].classList.add("ship");
         }
     }
-    return true; // All ships have been hit
-}
-
-function resetGame() {
-    player1GridElement.innerHTML = "";
-    player2GridElement.innerHTML = "";
-    player1Grid = [];
-    player2Grid = [];
-    shipLengths = [4, 3, 3, 2];
-    currentTurn = "Player1";
-    shotResult.textContent = "";
-    instruction.textContent = "Click 'Start Game' to begin a new game.";
-    turnIndicator.textContent = "";
-
-    player1GridElement.removeEventListener("click", handleAttack);
-    player2GridElement.removeEventListener("click", handleAttack);
 }
 
 function player1ShipPlacementHandler(event) {
@@ -199,16 +109,17 @@ function player2ShipPlacementHandler(event) {
     handleShipPlacement(event, player2Grid, "Player2");
 }
 
-startButton.addEventListener("click", () => {
-    resetGame();
-    createGrid(player1GridElement, player1Grid);
-    createGrid(player2GridElement, player2Grid);
+function startGame() {
+    // Implement game start logic here
+    instruction.textContent = "Game started! Click on the opponent's grid to fire.";
+    // Add event listeners for shooting
+}
 
-    instruction.textContent = "Player 1, place your ships.";
-    turnIndicator.textContent = "Player 1's Turn";
+// Initialize the game
+createGrid(player1GridElement, player1Grid);
+createGrid(player2GridElement, player2Grid);
 
-    player1GridElement.classList.remove("disabled");
-    player2GridElement.classList.add("disabled");
+player1GridElement.addEventListener("click", player1ShipPlacementHandler);
+player2GridElement.classList.add("disabled");
 
-    player1GridElement.addEventListener("click", player1ShipPlacementHandler);
-});
+instruction.textContent = "Player 1, place your ships on the grid. Press 'R' to rotate.";
