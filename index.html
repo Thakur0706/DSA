@@ -9,30 +9,21 @@
 </head>
 
 <body>
+    <h1>Battleship Game</h1>
     <div class="game-container">
-        <h1>Battleship Game</h1>
-
-        <div class="controls">
-            <button id="start-button">Start Game</button>
-            <div id="turn-indicator">Waiting to start...</div>
-            <div id="instruction">Click "Start Game" to begin placing ships.</div>
+        <div class="grid-container">
+            <div class="player-label">Player 1</div>
+            <div id="player1-grid" class="grid"></div>
         </div>
-
-        <div class="grids">
-            <div class="grid-container">
-                <h2>Player 1</h2>
-                <div id="player1-grid" class="grid"></div>
-            </div>
-
-            <div class="grid-container">
-                <h2>Player 2</h2>
-                <div id="player2-grid" class="grid disabled"></div>
-            </div>
+        <div class="grid-container">
+            <div class="player-label">Player 2</div>
+            <div id="player2-grid" class="grid"></div>
         </div>
-
-        <div id="shot-result"></div>
     </div>
-
+    <button id="start-button">Start Game</button>
+    <div id="turn-indicator"></div>
+    <div id="shot-result"></div>
+    <div id="instruction"></div>
     <script src="script.js"></script>
 </body>
 
