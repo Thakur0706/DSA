@@ -1,0 +1,92 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+.game-container {
+    text-align: center;
+    width: 80%;
+    max-width: 1000px;
+}
+
+.controls {
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#turn-indicator,
+#instruction {
+    margin-top: 10px;
+}
+
+.grids {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.grid-container {
+    display: inline-block;
+    margin: 10px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(10, 30px);
+    grid-template-rows: repeat(10, 30px);
+    gap: 5px;
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #000;
+    background-color: #ddd;
+    cursor: pointer;
+}
+
+.cell.ship {
+    background-color: #aaa;
+    /* Ship cells */
+}
+
+.cell.hit {
+    background-color: red;
+    /* Cells that have been hit */
+}
+
+.cell.miss {
+    background-color: blue;
+    /* Cells that have been missed */
+}
+
+#shot-result {
+    font-size: 18px;
+    margin-top: 20px;
+    color: #333;
+}
+
+.grid.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
